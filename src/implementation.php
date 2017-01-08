@@ -13,7 +13,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-    test.php - Simple working example of lexer.php
+    implementation.php - Simple working example of lexer.php
     Troy Daniels - 08/01/17
 */
 
