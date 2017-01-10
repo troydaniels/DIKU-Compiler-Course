@@ -43,36 +43,39 @@ class Lexer {
     '/^(\"[^\"]*\")/' => "QUOTED_STRING",
   );
 
-  function run($fh){
-    // Until we reach EOF
-    while( ($line = fgets($fh)) !== false ) {
-      $number++;
-      // Reset character offset
-      $offset = 0;
-      // Attempt to match regex patterns from offest to end of line 
-      while( $offset < strlen($line) ) {
-        $substring = substr($line, $offset);
-        foreach( static::$tokenRegex as $regex => $type ) {
-          $match = false;
-          if( preg_match($regex, $substring, $matches) ) {
-            // We have at least one match to our regex
-            $tokens[] = array(
-              // $matches[1] holds first propper substring
-              'string' => $matches[1],
-              'token' => $type,
-            );
-            $offset += strlen($matches[1]);
-            $match = true;
-            break;
-          }
-        }
-        // We didn't find a match - print error and exit
-        if( !$match ) {
-              print "Parse error near line " . $number . ", character " . ++$offset . "\n";
-              exit(1);
+  // Keep track of the current line and character position
+  private $line = 0;
+  private $offset = 0;
+
+  function next($string, $line_){
+    //If we've never seen this line number before, reset our offset
+    if( $this->line != $line_ ){
+      $this->line = $line_;
+      $this->offset = 0;
+    }  
+    // Attempt to match regex patterns from offest to end of line 
+    if( $this->offset < strlen($string) ) {
+      $substring = substr($string, $this->offset);
+      foreach( static::$tokenRegex as $regex => $type ) {
+        $match = false;
+        if( preg_match($regex, $substring, $matches) ) {
+          // We have at least one match to our regex
+          $token = array(
+            // $matches[1] holds first propper substring
+            'string' => $matches[1],
+            'token' => $type,
+          );
+          $this->offset += strlen($matches[1]);
+          $match = true;
+          break;
         }
       }
+      // We didn't find a match - print error and exit
+      if( !$match ) {
+        print "Parse error near line " . $this->line . ", character " . $this->offset . "\n";
+        exit(1);
+      }
     }
-    return $tokens;   
+    return $token;   
   }
 }

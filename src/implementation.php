@@ -27,11 +27,18 @@ if( $argc != 2 ) {
 }
 
 if ( file_exists($filename) ) {
-   $fh = fopen($filename, "r") or die("Unable to open file");
-
-   $lexer = new Lexer();
-   var_dump($lexer::run($fh));
-   fclose($fh);
+  $fh = fopen($filename, "r") or die("Unable to open file");
+  $lexer = new Lexer();
+  $line = 0;
+  // Until we reach EOF, grab the next line from the file
+  while( ($string = fgets($fh)) !== false ) {
+    // And break off tokens
+    while( ($nextToken = $lexer->next($string, $line)) != false ) {
+      var_dump($nextToken);
+    }
+    $line++;
+  }
+  fclose($fh);
 } else {
    print "File '" . $filename . "' does not exist\n";
    exit (1);
