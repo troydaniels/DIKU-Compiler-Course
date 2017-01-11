@@ -72,7 +72,7 @@ class Lexer {
       }
       // We didn't find a match - print error and exit
       if( !$match ) {
-        print "Parse error near line " . $this->line . ", character " . $this->offset . "\n";
+        print "Lexical error near line " . ++$this->line . ", character " . ++$this->offset . "\n";
         exit(1);
       }
     }
