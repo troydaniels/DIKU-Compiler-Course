@@ -62,8 +62,8 @@ class Lexer {
           // We have at least one match to our regex
           $token = array(
             // $matches[1] holds first propper substring
-            'string' => $matches[1],
-            'token' => $type,
+            'value' => $matches[1],
+            'symbol' => $type,
           );
           $this->offset += strlen($matches[1]);
           $match = true;
