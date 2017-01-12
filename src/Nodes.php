@@ -62,11 +62,13 @@ class PrintFunction {
 // While loop
 class WhileLoop {
   public $symbol;
+  public $left;   
   public $right;
-  function __construct ( $symbol_, $right_ ) {
-  	$this->symbol = $symbol_;
-  	$this->right = $right_;
-  }	
+  function __construct( $symbol_, $left_, $right_ ) {
+    $this->symbol = $symbol_;
+    $this->left = $left_;
+    $this->right = $right_; 
+  }
 }
 
 

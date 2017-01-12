@@ -24,27 +24,48 @@ class Parser {
   private $currentToken;
   private $line;
   private $lexer;
+  private $fh;
+  private $AST;
 
-  function run($fh){
+  function run($fh_){
+  	$this->fh = $fh_;
   	$this->lexer = new Lexer();
   	$this->line = 0;
+
+	while( $this->string !== false ) {
 	// Until we reach EOF, grab the next line from the file
-	while( ($this->string = fgets($fh)) !== false ) {
+	self::getNextLine();
 	  // And break off tokens
 	  $this->currentToken = $this->lexer->next($this->string, $this->line);
 	  // Curse of the whitespace
-	  if(   $this->currentToken['symbol'] == "WHITESPACE" ){
+	  while(   $this->currentToken['symbol'] === "WHITESPACE" ){
   	  	$this->currentToken = $this->lexer->next($this->string, $this->line);
   	  }
-	  while( $this->currentToken != false ) {
-	  	return @self::assignment();
-	  }
-	  $this->line++;
+	  switch ( $this->currentToken['symbol'] ) {
+	  	case "VARIABLE":
+	  	  $this->AST[] = @self::assignment();
+	  	  break;
+	    case "WHILE":
+	      $this->AST[] = @self::statement();
+	      break;
+	    case "PRINT":
+	      $this->AST[] = @self::printFunction();
+	    default:
+	      break;
+ 	  }
 	}
+	return $this->AST;
+  }
+
+  function getNextLine(){
+	$this->line++;
+  	$this->string = fgets($this->fh);
+ // 	print $this->string  . "\n";
   }
 
    function printError($expectedSymbol) {
    	  print "Parse error near '". $this->currentToken['value'] . "' - Expected " . $expectedSymbol . "\n";
+   	  exit(1);
    }
 
   // If we find a token we expect update $currentToken, else, throw an error
@@ -52,30 +73,28 @@ class Parser {
   	if ( $this->currentToken['symbol'] === $expectedSymbol ) {
   	  $this->currentToken = $this->lexer->next($this->string, $this->line);
   	  // This could be a whitespace character
-  	  if(   $this->currentToken['symbol'] === "WHITESPACE" ){
+  	  if ( $this->currentToken['symbol'] === "WHITESPACE" ) {
   	  	$this->currentToken = $this->lexer->next($this->string, $this->line);
   	  }
   	} else {
-  		self::printError($expectedSymbol);
-  		var_dump($this->currentToken);
-  		exit (1);
-  	}
+  	  self::printError($expectedSymbol);
+  	}  
   }
 
   // <assignment> => VARIABLE ASSIGN [ <exp_1> | QUOTED_STRING ] SEMICOLON
   function assignment() {
   	$variable = new Element( $this->currentToken['symbol'], $this->currentToken['value'] );
-  	$this->consume("VARIABLE");
+  	self::consume("VARIABLE");
   	$assign = new BinaryOperation( $this->currentToken['symbol'], $variable, null );
-  	$this->consume("ASSIGN");
+  	self::consume("ASSIGN");
   	if( $this->currentToken['symbol'] === "QUOTED_STRING" ) {
-  		$string = new Element( $this->currentToken['symbol'], $this->currentToken['value'] );
-  		$assign->right = $string;
-  		$this->consume("QUOTED_STRING");
+  	  $string = new Element( $this->currentToken['symbol'], $this->currentToken['value'] );
+  	  $assign->right = $string;
+  	  $this->consume("QUOTED_STRING");
   	} else {
-  		$assign->right = self::exp_1();
+  	  $assign->right = self::exp_1();
   	}
-    $this->consume("SEMICOLON");
+    self::consume("SEMICOLON");
     return $assign;
   }
 
@@ -83,11 +102,11 @@ class Parser {
   function exp_1() {
   	$exp_1 = self::exp_2();
   	while ( $this->currentToken['symbol'] === "LESS_THAN" ||
-    	    $this->currentToken['symbol'] === "GREATER_THAN" ||
-    	    $this->currentToken['symbol'] === "EQUALITY" ) {
-  	    	$exp_1 = new BinaryOperation( $this->currentToken['symbol'], $exp_1, null );
-  			$this->consume($this->currentToken['symbol']);
-  			$exp_1->right = self::exp_2();
+      $this->currentToken['symbol'] === "GREATER_THAN" ||
+      $this->currentToken['symbol'] === "EQUALITY" ) {
+  	  $exp_1 = new BinaryOperation( $this->currentToken['symbol'], $exp_1, null );
+  	  self::consume($this->currentToken['symbol']);
+  	  $exp_1->right = self::exp_2();
   	}
   	return $exp_1;
 }
@@ -96,10 +115,10 @@ class Parser {
   function exp_2() {
   	$exp_2 = self::exp_3();
   	while ( $this->currentToken['symbol'] === "PLUS" ||
-    	    $this->currentToken['symbol'] === "MINUS" ) {
-  	    	$exp_2 = new BinaryOperation( $this->currentToken['symbol'], $exp_2, null );
-  			$this->consume($this->currentToken['symbol']);
-  			$exp_2->right = self::exp_3();
+      $this->currentToken['symbol'] === "MINUS" ) {
+  	  $exp_2 = new BinaryOperation( $this->currentToken['symbol'], $exp_2, null );
+  	  self::consume($this->currentToken['symbol']);
+  	  $exp_2->right = self::exp_3();
   	}
   	return $exp_2;
   }
@@ -108,10 +127,10 @@ class Parser {
   function exp_3() {
   	$exp_3 = self::exp_4();
   	while ( $this->currentToken['symbol'] === "MULTIPLY" ||
-    	    $this->currentToken['symbol'] === "DIVIDE" ) {
-  	    	$exp_3 = new BinaryOperation( $this->currentToken['symbol'], $exp_3, null );
-  			$this->consume($this->currentToken['symbol']);
-  			$exp_3->right = self::exp_4();
+      $this->currentToken['symbol'] === "DIVIDE" ) {
+  	  $exp_3 = new BinaryOperation( $this->currentToken['symbol'], $exp_3, null );
+  	  self::consume($this->currentToken['symbol']);
+  	  $exp_3->right = self::exp_4();
   	}
   	return $exp_3;
   }
@@ -120,24 +139,70 @@ class Parser {
   function exp_4() {
     if ( $this->currentToken['symbol'] === "VARIABLE") {
       $exp_4 = new Element( $this->currentToken['symbol'], $this->currentToken['value'] );
-      $this->consume("VARIABLE");
+      self::consume("VARIABLE");
     // The following will be unary +/-
     } else if ( $this->currentToken['symbol'] === "PLUS" ||
     	        $this->currentToken['symbol'] === "MINUS" ) {
-    	$exp_4 = new UnaryOperation( $this->currentToken['symbol'], null);
-        // Small hack, but we know it's the correct token
-    	self::consume($this->currentToken['symbol']);
-    	$exp_4->right = $this->currentToken['value'];
-    	self::consume('INTEGER');
+      $exp_4 = new UnaryOperation( $this->currentToken['symbol'], null );
+      // Small hack, but we know it's the correct token
+      self::consume($this->currentToken['symbol']);
+   	  $exp_4->right = $this->currentToken['value'];
+      self::consume('INTEGER');
     } else if ( $this->currentToken['symbol'] === "INTEGER" ) {
-    	$exp_4->right = $this->currentToken['value'];
-    	self::consume('INTEGER');
+      $exp_4->right = $this->currentToken['value'];
+      self::consume('INTEGER');
     } else {
-//        var_dump($this->currentToken);
-    	self::consume('L_BRA');
-    	$exp_4 = self::exp_1();
-    	self::consume('R_BRA');
+      self::consume('L_BRA');
+      $exp_4 = self::exp_1();
+      self::consume('R_BRA');
     }
     return $exp_4;
+  }
+
+  // <statement> => WHILE L_BRA ( <exp_1> ) R_BRA L_PAR ( <block> )* R_PAR
+  function statement() {
+  	$statement = new WhileLoop( $this->currentToken['symbol'], null, null );
+  	self::consume('WHILE');
+  	self::consume('L_BRA');
+  	$statement->right = self::exp_1();
+  	self::consume('R_BRA');
+  	self::consume('L_PAR');
+  	while( $this->currentToken['symbol'] != "R_PAR" ){
+  	  $statement = new WhileLoop( $this->currentToken['symbol'], $statement, null );
+  	  $statement->right = self::block();
+  	}
+
+  	self::consume('R_PAR');
+   return $statement;
+  }
+
+  // <block> => ( <print> )* | ( <assignment> ) *
+  function block() {
+  	//Likely true as the lexer tries to parse an empty
+  	//string at the end of the last line
+  	if( $this->currentToken == null ) {
+  	  self::getNextLine();
+  	  $this->currentToken = $this->lexer->next($this->string, $this->line);
+  	}
+  	if ( $this->currentToken['symbol'] === "PRINT" ){
+  		$block = self::printFunction();
+  	} else if ( $this->currentToken['symbol'] != "R_PAR" ) {
+  	  // This should catch all our errors in the block
+  		$block = self::assignment();
+  	}
+  	return $block;
+  }
+
+  function printFunction() {
+  	$printFunction = new PrintFunction( $this->currentToken['symbol'], null );
+  	self::consume('PRINT');
+  	if ( $this->currentToken['symbol'] === "VARIABLE" ||
+  		 $this->currentToken['symbol'] === "INTEGER" ||
+  		 $this->currentToken['symbol'] === "QUOTED_STRING" ) {
+  	  $printFunction->right = $this->currentToken;	
+  	  self::consume($this->currentToken['symbol']);
+  	}
+  	self::consume('SEMICOLON');
+  	return $printFunction;
   }
 }
