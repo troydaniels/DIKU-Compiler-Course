@@ -14,7 +14,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
     Parser.php - implementation of simple recursive descent parser in PHP
-    Troy Daniels - 08/01/17
+    Troy Daniels - 12/01/17
 */
 require_once('Node.php');
 require_once('Lexer.php');
@@ -43,8 +43,8 @@ class Parser {
   	  }
 	  switch ( $this->currentToken['symbol'] ) {
 	  	case "VARIABLE":
-	  	  $this->AST[] = @self::assignment();
-	  	  break;
+          $this->AST[] = @self::assignment();
+          break;
 	    case "WHILE":
 	      $this->AST[] = @self::statement();
 	      break;
