@@ -16,7 +16,7 @@
     Parser.php - implementation of simple recursive descent parser in PHP
     Troy Daniels - 08/01/17
 */
-require_once('Nodes.php');
+require_once('Node.php');
 require_once('Lexer.php');
 
 class Parser {
@@ -38,7 +38,7 @@ class Parser {
 	  // And break off tokens
 	  $this->currentToken = $this->lexer->next($this->string, $this->line);
 	  // Curse of the whitespace
-	  while(   $this->currentToken['symbol'] === "WHITESPACE" ){
+	  if(   $this->currentToken['symbol'] === "WHITESPACE" ){
   	  	$this->currentToken = $this->lexer->next($this->string, $this->line);
   	  }
 	  switch ( $this->currentToken['symbol'] ) {
@@ -83,12 +83,12 @@ class Parser {
 
   // <assignment> => VARIABLE ASSIGN [ <exp_1> | QUOTED_STRING ] SEMICOLON
   function assignment() {
-  	$variable = new Element( $this->currentToken['symbol'], $this->currentToken['value'] );
+  	$variable = new Element( $this->currentToken['symbol'], $this->currentToken['value'], null, null );
   	self::consume("VARIABLE");
-  	$assign = new BinaryOperation( $this->currentToken['symbol'], $variable, null );
+  	$assign = new BinaryOperation( $this->currentToken['symbol'], null, $variable, null );
   	self::consume("ASSIGN");
   	if( $this->currentToken['symbol'] === "QUOTED_STRING" ) {
-  	  $string = new Element( $this->currentToken['symbol'], $this->currentToken['value'] );
+  	  $string = new Element( $this->currentToken['symbol'], $this->currentToken['value'], null, null );
   	  $assign->right = $string;
   	  $this->consume("QUOTED_STRING");
   	} else {
@@ -104,7 +104,7 @@ class Parser {
   	while ( $this->currentToken['symbol'] === "LESS_THAN" ||
       $this->currentToken['symbol'] === "GREATER_THAN" ||
       $this->currentToken['symbol'] === "EQUALITY" ) {
-  	  $exp_1 = new BinaryOperation( $this->currentToken['symbol'], $exp_1, null );
+  	  $exp_1 = new BinaryOperation( $this->currentToken['symbol'], null, $exp_1, null );
   	  self::consume($this->currentToken['symbol']);
   	  $exp_1->right = self::exp_2();
   	}
@@ -116,7 +116,7 @@ class Parser {
   	$exp_2 = self::exp_3();
   	while ( $this->currentToken['symbol'] === "PLUS" ||
       $this->currentToken['symbol'] === "MINUS" ) {
-  	  $exp_2 = new BinaryOperation( $this->currentToken['symbol'], $exp_2, null );
+  	  $exp_2 = new BinaryOperation( $this->currentToken['symbol'], null, $exp_2, null );
   	  self::consume($this->currentToken['symbol']);
   	  $exp_2->right = self::exp_3();
   	}
@@ -128,7 +128,7 @@ class Parser {
   	$exp_3 = self::exp_4();
   	while ( $this->currentToken['symbol'] === "MULTIPLY" ||
       $this->currentToken['symbol'] === "DIVIDE" ) {
-  	  $exp_3 = new BinaryOperation( $this->currentToken['symbol'], $exp_3, null );
+  	  $exp_3 = new BinaryOperation( $this->currentToken['symbol'], null, $exp_3, null );
   	  self::consume($this->currentToken['symbol']);
   	  $exp_3->right = self::exp_4();
   	}
@@ -138,12 +138,12 @@ class Parser {
   // <exp_4> => VARIABLE | ( PLUS | MINUS )? INTEGER | L_BRA <exp_1> R_BRA
   function exp_4() {
     if ( $this->currentToken['symbol'] === "VARIABLE") {
-      $exp_4 = new Element( $this->currentToken['symbol'], $this->currentToken['value'] );
+      $exp_4 = new Element( $this->currentToken['symbol'], $this->currentToken['value'], null, null );
       self::consume("VARIABLE");
     // The following will be unary +/-
     } else if ( $this->currentToken['symbol'] === "PLUS" ||
     	        $this->currentToken['symbol'] === "MINUS" ) {
-      $exp_4 = new UnaryOperation( $this->currentToken['symbol'], null );
+      $exp_4 = new UnaryOperation( $this->currentToken['symbol'], null, null, null );
       // Small hack, but we know it's the correct token
       self::consume($this->currentToken['symbol']);
    	  $exp_4->right = $this->currentToken['value'];
@@ -161,14 +161,14 @@ class Parser {
 
   // <statement> => WHILE L_BRA ( <exp_1> ) R_BRA L_PAR ( <block> )* R_PAR
   function statement() {
-  	$statement = new WhileLoop( $this->currentToken['symbol'], null, null );
+  	$statement = new WhileLoop( $this->currentToken['symbol'], null, null, null );
   	self::consume('WHILE');
   	self::consume('L_BRA');
   	$statement->right = self::exp_1();
   	self::consume('R_BRA');
   	self::consume('L_PAR');
   	while( $this->currentToken['symbol'] != "R_PAR" ){
-  	  $statement = new WhileLoop( $this->currentToken['symbol'], $statement, null );
+  	  $statement = new WhileLoop( $this->currentToken['symbol'], null,  $statement, null );
   	  $statement->right = self::block();
   	}
 
@@ -184,6 +184,9 @@ class Parser {
   	  self::getNextLine();
   	  $this->currentToken = $this->lexer->next($this->string, $this->line);
   	}
+	if(   $this->currentToken['symbol'] === "WHITESPACE" ){
+  	  $this->currentToken = $this->lexer->next($this->string, $this->line);
+  	}
   	if ( $this->currentToken['symbol'] === "PRINT" ){
   		$block = self::printFunction();
   	} else if ( $this->currentToken['symbol'] != "R_PAR" ) {
@@ -193,8 +196,9 @@ class Parser {
   	return $block;
   }
 
+  //<print> => PRINT [ VARIABLE | INTEGER | QUOTED_STRING ] SEMICOLON
   function printFunction() {
-  	$printFunction = new PrintFunction( $this->currentToken['symbol'], null );
+  	$printFunction = new PrintFunction( $this->currentToken['symbol'], null, null, null );
   	self::consume('PRINT');
   	if ( $this->currentToken['symbol'] === "VARIABLE" ||
   		 $this->currentToken['symbol'] === "INTEGER" ||

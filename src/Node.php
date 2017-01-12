@@ -17,59 +17,23 @@
     Troy Daniels - 08/01/17
 */
 
-//  Binary operators
-class BinaryOperation {
+abstract class Node {
   public $symbol;
+  public $value;
   public $left;   
   public $right;
-  function __construct( $symbol_, $left_, $right_ ) {
-  	$this->symbol = $symbol_;
-  	$this->left = $left_;
-  	$this->right = $right_;	
-  }
-}
-
-// Unary operators
-class UnaryOperation {
-  public $symbol;
-  public $right;
-  function __construct( $symbol_, $right_ ) {
+  function __construct( $symbol_, $value_, $left_, $right_) {
     $this->symbol = $symbol_;
-    $this->right = $right_;
+    $this->value = $value_;
+    $this->left = $left_;
+    $this->right = $right_; 
   }  
 }
 
-// Variable, string or integer
-class Element {
-  public $symbol;
-  public $value;
-  function __construct( $symbol_, $value_ ) {
-  	$this->symbol = $symbol_;
-	  $this->value = $value_;
-  }
-}
-
-// Print function
-class PrintFunction {
-  public $symbol;
-  public $right;
-  function __construct ( $symbol_, $right_ ) {
-  	$this->symbol = $symbol_;
-  	$this->right = $right_;
-  }
-}
-
-// While loop
-class WhileLoop {
-  public $symbol;
-  public $left;   
-  public $right;
-  function __construct( $symbol_, $left_, $right_ ) {
-    $this->symbol = $symbol_;
-    $this->left = $left_;
-    $this->right = $right_; 
-  }
-}
-
-
-
+class BinaryOperation extends Node {}
+class UnaryOperation extends Node {}
+// VARIABLE, QUOTED_STRING, INTEGER
+class Element extends Node {}
+class PrintFunction extends Node {}
+class WhileLoop extends Node {}
+ 
