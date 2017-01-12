@@ -60,7 +60,6 @@ class Parser {
   function getNextLine(){
 	$this->line++;
   	$this->string = fgets($this->fh);
- // 	print $this->string  . "\n";
   }
 
    function printError($expectedSymbol) {
