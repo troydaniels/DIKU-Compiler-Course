@@ -13,25 +13,25 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-    implementation.php - Simple working example of Parser.php
-    Troy Daniels - 08/01/17
+    SymbolTable.php - Defines a simple symbol table implementation
+    Troy Daniels - 14/01/17
 */
 
-include_once('Parser.php');
+class SymbolTable{
+	private $symbolTable;
 
-if( $argc != 2 ) {
-   print "Usage: php " . $argv[0] . " filename\n";
-   exit (1);
-} else {
-   $filename = $argv[1]; 
-}
+	// Add a new symbol/data pair to our symbol table
+	function bind( $symbol, $data ) {
+		$symbolTable[$symbol] = $data;
+	}
 
-if ( file_exists($filename) ) {
-  $fh = fopen($filename, "r") or die("Unable to open file");
-  $parser = new Parser();
-  var_dump($parser->run($fh));
-  fclose($fh);
-} else {
-   print "File '" . $filename . "' does not exist\n";
-   exit (1);
+	// Return data associated with $symbol, or raise an exception if not defined
+	function lookup( $symbol ) {
+		$data = $symbolTable[$symbol];
+		if( $data === null ){
+			throw new Exception("Error: symbol '" . $symbol . "' is not defined.");
+		}
+		return $data;
+	}
+
 }

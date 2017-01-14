@@ -22,7 +22,7 @@ abstract class Node {
   public $value;
   public $left;   
   public $right;
-  function __construct( $symbol_, $value_, $left_, $right_) {
+  function __construct( $symbol_, $value_, $left_, $right_ ) {
     $this->symbol = $symbol_;
     $this->value = $value_;
     $this->left = $left_;
@@ -31,9 +31,6 @@ abstract class Node {
 }
 
 class BinaryOperation extends Node {}
-class UnaryOperation extends Node {}
-// VARIABLE, QUOTED_STRING, INTEGER
-class Element extends Node {}
 class PrintFunction extends Node {}
 class WhileLoop extends Node {}
  

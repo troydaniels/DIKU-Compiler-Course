@@ -62,13 +62,13 @@ class Parser {
   	$this->string = fgets($this->fh);
   }
 
-   function printError($expectedSymbol) {
+   function printError( $expectedSymbol ) {
    	  print "Parse error near '". $this->currentToken['value'] . "' - Expected " . $expectedSymbol . "\n";
    	  exit(1);
    }
 
   // If we find a token we expect update $currentToken, else, throw an error
-  function consume($expectedSymbol) {
+  function consume( $expectedSymbol ) {
   	if ( $this->currentToken['symbol'] === $expectedSymbol ) {
   	  $this->currentToken = $this->lexer->next($this->string, $this->line);
   	  // This could be a whitespace character
@@ -82,12 +82,14 @@ class Parser {
 
   // <assignment> => VARIABLE ASSIGN [ <exp_1> | QUOTED_STRING ] SEMICOLON
   function assignment() {
-  	$variable = new Element( $this->currentToken['symbol'], $this->currentToken['value'], null, null );
+//  	$variable = new Element( $this->currentToken['symbol'], $this->currentToken['value'], null, null );
+    $variable = $this->currentToken['value'];
   	self::consume("VARIABLE");
   	$assign = new BinaryOperation( $this->currentToken['symbol'], null, $variable, null );
   	self::consume("ASSIGN");
   	if( $this->currentToken['symbol'] === "QUOTED_STRING" ) {
-  	  $string = new Element( $this->currentToken['symbol'], $this->currentToken['value'], null, null );
+//  	  $string = new Element( $this->currentToken['symbol'], $this->currentToken['value'], null, null );
+      $string = $this->currentToken['value'];
   	  $assign->right = $string;
   	  $this->consume("QUOTED_STRING");
   	} else {
@@ -137,18 +139,20 @@ class Parser {
   // <exp_4> => VARIABLE | ( PLUS | MINUS )? INTEGER | L_BRA <exp_1> R_BRA
   function exp_4() {
     if ( $this->currentToken['symbol'] === "VARIABLE") {
-      $exp_4 = new Element( $this->currentToken['symbol'], $this->currentToken['value'], null, null );
+      $exp_4 = $this->currentToken['value'];
       self::consume("VARIABLE");
     // The following will be unary +/-
-    } else if ( $this->currentToken['symbol'] === "PLUS" ||
-    	        $this->currentToken['symbol'] === "MINUS" ) {
-      $exp_4 = new UnaryOperation( $this->currentToken['symbol'], null, null, null );
+    } else if ( $this->currentToken['symbol'] === "PLUS" ){
       // Small hack, but we know it's the correct token
       self::consume($this->currentToken['symbol']);
-   	  $exp_4->right = $this->currentToken['value'];
+      $exp_4 = $this->currentToken['value'];
+      self::consume('INTEGER');
+    } else if ( $this->currentToken['symbol'] === "MINUS" ){
+      self::consume($this->currentToken['symbol']);
+      $exp_4 = -1 * $this->currentToken['value'];
       self::consume('INTEGER');
     } else if ( $this->currentToken['symbol'] === "INTEGER" ) {
-      $exp_4->right = $this->currentToken['value'];
+      $exp_4 = $this->currentToken['value'];
       self::consume('INTEGER');
     } else {
       self::consume('L_BRA');
