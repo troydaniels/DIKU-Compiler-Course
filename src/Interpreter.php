@@ -43,6 +43,8 @@ class Interpreter{
     private $parser;
     private $fh;
     private $symbolTable;
+    // Stores result (pos. null) of the previous interpretation function call
+    private $previousCalc; 
 
    function __construct( $fh_ ){
        $this->parser = new Parser();
@@ -51,8 +53,10 @@ class Interpreter{
    }
 
    function run(){
-       $array = $this->parser->run($this->fh);
-       self::postorderTraversal($array[0]);    
+        $ASTarray = @$this->parser->run($this->fh);
+        foreach( $ASTarray as $AST ){
+            self::postorderTraversal($AST);
+        }
    }
 
     // Implements AST postorder traversal algorithm 
@@ -60,19 +64,111 @@ class Interpreter{
         $left = $node->left;
         $right = $node->right;
         $symbol = $node->symbol;
+        $nextInstruction = $node->nextInstruction;
 
         // Recurse to bottom, and traverse child nodes left to right
         if( $left instanceof Node ) {
             self::postorderTraversal( $left );
         } else if ( $right instanceof Node ) {
             self::postorderTraversal( $right );
-        } 
+        }
 
         // Now, call relevant method for this node
-        $this->{"interpret_" . $symbol}();
+        $this->previousCalc = $this->{"interpret_" . $symbol}( $node );
+        
+        // And then move onto any next instruction
+        if ( $nextInstruction != null ) {
+            self::postorderTraversal( $nextInstruction );
+        } 
     }
 
-    // The following defines functions to interpret a given node
-    function interpret_MINUS(){}
-    function interpret_ASSIGN(){}
+    // The following defines methods to interpret a given node
+
+    function interpret_MINUS( $node ) {
+        $left = $this->symbolTable->lookup($node->left);
+        $right = $this->symbolTable->lookup($node->right);
+        return ($left - $right);
+    }
+    
+    function interpret_PLUS( $node ) {
+        $left = $this->symbolTable->lookup($node->left);
+        $right = $this->symbolTable->lookup($node->right);
+        return ($left + $right);
+    }
+    function interpret_MULTIPLY( $node ) {
+        $left = $this->symbolTable->lookup($node->left);
+        $right = $this->symbolTable->lookup($node->right);
+        return ($left * $right);
+    }
+
+    function interpret_DIVIDE( $node ) {
+        $left = $this->symbolTable->lookup($node->left);
+        $right = $this->symbolTable->lookup($node->right);
+        return ($left / $right);
+    }
+
+    function interpret_ASSIGN( $node ) {
+        $left = $node->left;
+        $right = $this->previousCalc;
+        // If we're not assigning to a previous calculation
+        if( is_null($right) ){
+            $right = $this->symbolTable->lookup($node->right);
+        }
+        $this->symbolTable->bind( $left, $right );
+    }
+    
+    function interpret_EQUALITY( $node ) {
+        $left = $this->symbolTable->lookup($node->left);
+        $right = $this->symbolTable->lookup($node->right);
+        return ($left == $right);
+    }
+
+    function interpret_LESS_THAN( $node ) {
+        $left = $this->symbolTable->lookup($node->left);
+        $right = $this->symbolTable->lookup($node->right);
+        return ($left < $right);       
+    }
+
+    function interpret_GREATER_THAN( $node ) {
+        $left = $this->symbolTable->lookup($node->left);
+        $right = $this->symbolTable->lookup($node->right);
+        return ($left > $right);       
+    }
+
+    function interpret_WHILE( $node ) {
+        // We need to recurse again
+        self::postorderTraversal($node->left);
+        while($this->previousCalc) {
+            self::postorderTraversal( $node->right );
+            self::postorderTraversal($node->left);
+        }
+    }
+
+
+    function interpret_PRINT( $node ) {
+        // Regex to match valid escape chars
+        $escapeCharRegex = array(
+            "/\\\\a/" => "\a",
+            "/\\\\b/" => "\b",
+            "/\\\\f/" => "\f",
+            "/\\\\n/" => "\n",
+            "/\\\\r/" => "\r",
+            "/\\\\t/" => "\t",
+            "/\\\\v/" => "\v",
+            );
+
+        $right = $this->symbolTable->lookup($node->right);
+        // If quoted string, we need to strip off '"' characters
+        if( $right[0] === '"' ){
+            $right = substr( $right, 1, -1 );
+
+        }
+        // Any escape characters arent interpreted properly
+        // They're a multi character string - so lets replace them
+        foreach($escapeCharRegex as $pattern => $replacement ){
+            $right = preg_replace($pattern, $replacement, $right);
+        }
+        print $right;
+    }
+
 }

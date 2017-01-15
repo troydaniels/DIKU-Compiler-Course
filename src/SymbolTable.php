@@ -17,21 +17,27 @@
     Troy Daniels - 14/01/17
 */
 
-class SymbolTable{
+class SymbolTable {
 	private $symbolTable;
 
 	// Add a new symbol/data pair to our symbol table
 	function bind( $symbol, $data ) {
-		$symbolTable[$symbol] = $data;
+		$this->symbolTable[$symbol] = $data;
 	}
 
-	// Return data associated with $symbol, or raise an exception if not defined
+	// Return data associated with $symbol, or print warning if not defined
 	function lookup( $symbol ) {
-		$data = $symbolTable[$symbol];
-		if( $data === null ){
-			throw new Exception("Error: symbol '" . $symbol . "' is not defined.");
+		// Is this already a number?
+		// Is it a QUOTED_STRING?
+		if( is_numeric($symbol) == false && $symbol[0] != '"'){
+			$data = $this->symbolTable[$symbol];
+			// Strictly equal, as assigning a variable to an empty string is valid
+			if( $data === null ){ 
+				print "Warning: symbol '" . $symbol . "' is not defined.\n";
+				// We don't have to exit - we could though if we wanted to, here
+			}
+			return $data;
 		}
-		return $data;
+		return $symbol;
 	}
-
 }

@@ -22,6 +22,7 @@ abstract class Node {
   public $value;
   public $left;   
   public $right;
+  public $nextInstruction;
   function __construct( $symbol_, $value_, $left_, $right_ ) {
     $this->symbol = $symbol_;
     $this->value = $value_;

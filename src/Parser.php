@@ -33,20 +33,21 @@ class Parser {
   	$this->line = 0;
 
 	while( $this->string !== false ) {
-	// Until we reach EOF, grab the next line from the file
-	self::getNextLine();
+	  // Until we reach EOF, grab the next line from the file
+	  self::getNextLine();
 	  // And break off tokens
 	  $this->currentToken = $this->lexer->next($this->string, $this->line);
 	  // Curse of the whitespace
 	  if(   $this->currentToken['symbol'] === "WHITESPACE" ){
   	  	$this->currentToken = $this->lexer->next($this->string, $this->line);
   	  }
+
 	  switch ( $this->currentToken['symbol'] ) {
 	  	case "VARIABLE":
-          $this->AST[] = @self::assignment();
-          break;
+        $this->AST[] = @self::assignment();
+        break;
 	    case "WHILE":
-	      $this->AST[] = @self::statement();
+        $this->AST[] = @self::statement();
 	      break;
 	    case "PRINT":
 	      $this->AST[] = @self::printFunction();
@@ -63,6 +64,7 @@ class Parser {
   }
 
    function printError( $expectedSymbol ) {
+    var_dump($this->currentToken);  
    	  print "Parse error near '". $this->currentToken['value'] . "' - Expected " . $expectedSymbol . "\n";
    	  exit(1);
    }
@@ -145,7 +147,7 @@ class Parser {
     } else if ( $this->currentToken['symbol'] === "PLUS" ){
       // Small hack, but we know it's the correct token
       self::consume($this->currentToken['symbol']);
-      $exp_4 = $this->currentToken['value'];
+      $exp_4 = (int)$this->currentToken['value'];
       self::consume('INTEGER');
     } else if ( $this->currentToken['symbol'] === "MINUS" ){
       self::consume($this->currentToken['symbol']);
@@ -167,27 +169,31 @@ class Parser {
   	$statement = new WhileLoop( $this->currentToken['symbol'], null, null, null );
   	self::consume('WHILE');
   	self::consume('L_BRA');
-  	$statement->right = self::exp_1();
+  	$statement->left = self::exp_1();
   	self::consume('R_BRA');
   	self::consume('L_PAR');
+    $statement->right = self::block();
+    $tempNode = &$statement->right;
   	while( $this->currentToken['symbol'] != "R_PAR" ){
-  	  $statement = new WhileLoop( $this->currentToken['symbol'], null,  $statement, null );
-  	  $statement->right = self::block();
+      // We need to traverse to the bottom of the AST
+      while( $tempNode->nextInstruction instanceof Node ) {
+        $tempNode = &$tempNode->nextInstruction;
+      }
+      // And now we can store the next while-block instruction
+  	  $tempNode->nextInstruction = self::block();
   	}
-
   	self::consume('R_PAR');
-   return $statement;
+
+    return $statement;
   }
 
   // <block> => ( <print> )* | ( <assignment> ) *
   function block() {
-  	//Likely true as the lexer tries to parse an empty
-  	//string at the end of the last line
-  	if( $this->currentToken == null ) {
-  	  self::getNextLine();
-  	  $this->currentToken = $this->lexer->next($this->string, $this->line);
-  	}
-	if(   $this->currentToken['symbol'] === "WHITESPACE" ){
+    // In this case, as a WHILE loop can span several lines, our token could be null or WHITESPACE  
+    while( $this->currentToken == null || $this->currentToken['symbol'] === "WHITESPACE" ) {
+      if( $this->currentToken == null ) {
+  	    self::getNextLine();
+  	  }
   	  $this->currentToken = $this->lexer->next($this->string, $this->line);
   	}
   	if ( $this->currentToken['symbol'] === "PRINT" ){
@@ -206,7 +212,7 @@ class Parser {
   	if ( $this->currentToken['symbol'] === "VARIABLE" ||
   		 $this->currentToken['symbol'] === "INTEGER" ||
   		 $this->currentToken['symbol'] === "QUOTED_STRING" ) {
-  	  $printFunction->right = $this->currentToken;	
+  	  $printFunction->right = $this->currentToken['value'];
   	  self::consume($this->currentToken['symbol']);
   	}
   	self::consume('SEMICOLON');
