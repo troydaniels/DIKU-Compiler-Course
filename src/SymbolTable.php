@@ -27,8 +27,7 @@ class SymbolTable {
 
 	// Return data associated with $symbol, or print warning if not defined
 	function lookup( $symbol ) {
-		// Is this already a number?
-		// Is it a QUOTED_STRING?
+		// Is this a number or a QUOTED_STRING?
 		if( is_numeric($symbol) == false && $symbol[0] != '"'){
 			$data = $this->symbolTable[$symbol];
 			// Strictly equal, as assigning a variable to an empty string is valid

@@ -25,7 +25,7 @@ class Parser {
   private $line;
   private $lexer;
   private $fh;
-  private $AST;
+  private $ASTarray;
 
   function run($fh_){
   	$this->fh = $fh_;
@@ -44,18 +44,18 @@ class Parser {
 
 	  switch ( $this->currentToken['symbol'] ) {
 	  	case "VARIABLE":
-        $this->AST[] = @self::assignment();
+        $this->ASTarray[] = @self::assignment();
         break;
 	    case "WHILE":
-        $this->AST[] = @self::statement();
+        $this->ASTarray[] = @self::statement();
 	      break;
 	    case "PRINT":
-	      $this->AST[] = @self::printFunction();
+	      $this->ASTarray[] = @self::printFunction();
 	    default:
 	      break;
  	  }
 	}
-	return $this->AST;
+	return $this->ASTarray;
   }
 
   function getNextLine(){
