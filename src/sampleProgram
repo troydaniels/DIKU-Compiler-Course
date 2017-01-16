@@ -4,6 +4,7 @@ c = 0;
 d = 0;
 e = 0;
 //This is a comment
+//This is also a comment
 while( a < 1 ) {
 	print "? ";
 	a = a + 1;

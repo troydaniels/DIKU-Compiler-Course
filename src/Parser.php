@@ -32,33 +32,29 @@ class Parser {
   	$this->lexer = new Lexer();
   	$this->line = 0;
 
-	while( $this->string !== false ) {
-	  // Until we reach EOF, grab the next line from the file
-	  self::getNextLine();
-	  // And break off tokens
-	  $this->currentToken = $this->lexer->next($this->string, $this->line);
-	  
-    if( $this->currentToken['symbol'] === "COMMENT" ){
-      self::getNextLine();
-      $this->currentToken = $this->lexer->next($this->string, $this->line);
-    // Curse of the whitespace
-    } else if ( $this->currentToken['symbol'] === "WHITESPACE" ){
-  	 	$this->currentToken = $this->lexer->next($this->string, $this->line);
+  	while( $this->string !== false ) {
+  	  switch ( $this->currentToken['symbol'] ) {
+  	  	case "VARIABLE":
+          $this->ASTarray[] = @self::assignment();
+          break;
+  	    case "WHILE":
+          $this->ASTarray[] = @self::statement();
+  	      break;
+  	    case "PRINT":
+  	      $this->ASTarray[] = @self::printFunction();
+          break;
+        case "WHITESPACE":
+          $this->currentToken = $this->lexer->next($this->string, $this->line);
+          break;
+        case "COMMENT":
+  	    default:
+          // Until we reach EOF, grab the next line from the file
+          self::getNextLine();
+          // And break off tokens
+          $this->currentToken = $this->lexer->next($this->string, $this->line);
+  	      break;
+   	  }
   	}
-
-	  switch ( $this->currentToken['symbol'] ) {
-	  	case "VARIABLE":
-        $this->ASTarray[] = @self::assignment();
-        break;
-	    case "WHILE":
-        $this->ASTarray[] = @self::statement();
-	      break;
-	    case "PRINT":
-	      $this->ASTarray[] = @self::printFunction();
-	    default:
-	      break;
- 	  }
-	}
 	return $this->ASTarray;
   }
 
