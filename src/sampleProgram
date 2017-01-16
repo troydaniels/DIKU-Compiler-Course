@@ -1,10 +1,31 @@
-n = 0;
-while( n < 10 ) {
-	print "This is itteration number ";
-	print n;
-	print "\n";
-	n  = n + 1;
-}
+a = 0;
+b = 0;
+c = 0;
+d = 0;
+e = 0;
 
-print n;
+while( a < 1 ) {
+	print "? ";
+	a = a + 1;
+}
+print "\n";
+while( b < 2 ) {
+	print "? ";
+	b = b + 1;
+}
+print "\n";
+while( c < 3 ) {
+	print "? ";
+	c = c + 1;
+}
+print "\n";
+while( d < 4 ) {
+	print "? ";
+	d = d + 1;
+}
+print "\n";
+while( e < 5 ) {
+	print "? ";
+	e = e + 1;	
+}
 print "\n";

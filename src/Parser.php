@@ -198,6 +198,8 @@ class Parser {
   	}
   	if ( $this->currentToken['symbol'] === "PRINT" ){
   		$block = self::printFunction();
+    } else if ( $this->currentToken['symbol'] === "WHILE" ){
+      $block = self::statement();
   	} else if ( $this->currentToken['symbol'] != "R_PAR" ) {
   	  // This should catch all our errors in the block
   		$block = self::assignment();
