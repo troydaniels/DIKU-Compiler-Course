@@ -37,10 +37,14 @@ class Parser {
 	  self::getNextLine();
 	  // And break off tokens
 	  $this->currentToken = $this->lexer->next($this->string, $this->line);
-	  // Curse of the whitespace
-	  if(   $this->currentToken['symbol'] === "WHITESPACE" ){
-  	  	$this->currentToken = $this->lexer->next($this->string, $this->line);
-  	  }
+	  
+    if( $this->currentToken['symbol'] === "COMMENT" ){
+      self::getNextLine();
+      $this->currentToken = $this->lexer->next($this->string, $this->line);
+    // Curse of the whitespace
+    } else if ( $this->currentToken['symbol'] === "WHITESPACE" ){
+  	 	$this->currentToken = $this->lexer->next($this->string, $this->line);
+  	}
 
 	  switch ( $this->currentToken['symbol'] ) {
 	  	case "VARIABLE":

@@ -41,6 +41,7 @@ class Lexer {
     "/^(\<)/" => "LESS_THAN",
     "/^(\>)/" => "GREATER_THAN",
     '/^(\"[^\"]*\")/' => "QUOTED_STRING",
+    "/^\s*(\/\/*)/" => "COMMENT",
   );
 
   // Keep track of the current line and character position
