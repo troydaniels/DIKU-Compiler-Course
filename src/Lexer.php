@@ -23,6 +23,7 @@ class Lexer {
   // Longer string should appear first   
   static $tokenRegex = array(
     "/^(while)/" => "WHILE",
+    "/^(if)/" => "IF",
     "/^(print)/" => "PRINT",
     "/^(\s+)/" => "WHITESPACE",
     "/^([a-zA-Z]+)/" => "VARIABLE",

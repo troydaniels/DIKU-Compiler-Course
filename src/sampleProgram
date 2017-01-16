@@ -5,28 +5,28 @@ d = 0;
 e = 0;
 //This is a comment
 //This is also a comment
-while( a < 1 ) {
+if( a < 1 ) {
 	print "? ";
 	a = a + 1;
 }
 print "\n";
-while( b < 2 ) {
+if( a < 2 ) {
 	print "? ";
-	b = b + 1;
+	a = a + 1;
 }
 print "\n";
-while( c < 3 ) {
+if( a < 3 ) {
 	print "? ";
-	c = c + 1;
+	a = a + 1;
 }
 print "\n";
-while( d < 4 ) {
+if( a < 4 ) {
 	print "? ";
-	d = d + 1;
+	a = a + 1;
 }
 print "\n";
-while( e < 5 ) {
+if( a < 5 ) {
 	print "? ";
-	e = e + 1;	
+	a = a + 1;
 }
-print "\n";
+print "\nhere\n";

@@ -144,6 +144,15 @@ class Interpreter{
         }
     }
 
+    function interpret_IF( $node ) {
+        // We need to recurse again
+        self::postorderTraversal($node->left);
+        if($this->previousCalc) {
+            self::postorderTraversal( $node->right );
+            self::postorderTraversal($node->left);
+        }
+    }
+
 
     function interpret_PRINT( $node ) {
         // Regex to match valid escape chars

@@ -38,8 +38,11 @@ class Parser {
           $this->ASTarray[] = @self::assignment();
           break;
   	    case "WHILE":
-          $this->ASTarray[] = @self::statement();
+          $this->ASTarray[] = @self::while_statement();
   	      break;
+        case "IF":
+          $this->ASTarray[] = @self::if_statement();
+          break;
   	    case "PRINT":
   	      $this->ASTarray[] = @self::printFunction();
           break;
@@ -164,8 +167,8 @@ class Parser {
     return $exp_4;
   }
 
-  // <statement> => WHILE L_BRA ( <exp_1> ) R_BRA L_PAR ( <block> )* R_PAR
-  function statement() {
+  // <while_statement> => WHILE L_BRA ( <exp_1> ) R_BRA L_PAR ( <block> )* R_PAR
+  function while_statement() {
   	$statement = new WhileLoop( $this->currentToken['symbol'], null, null, null );
   	self::consume('WHILE');
   	self::consume('L_BRA');
@@ -187,6 +190,29 @@ class Parser {
     return $statement;
   }
 
+  // <if_statement> => IF L_BRA ( <exp_1> ) R_BRA L_PAR ( <block> )* R_PAR
+  function if_statement() {
+    $statement = new WhileLoop( $this->currentToken['symbol'], null, null, null );
+    self::consume('IF');
+    self::consume('L_BRA');
+    $statement->left = self::exp_1();
+    self::consume('R_BRA');
+    self::consume('L_PAR');
+    $statement->right = self::block();
+    $tempNode = &$statement->right;
+    while( $this->currentToken['symbol'] != "R_PAR" ){
+      // We need to traverse to the bottom of the AST
+      while( $tempNode->nextInstruction instanceof Node ) {
+        $tempNode = &$tempNode->nextInstruction;
+      }
+      // And now we can store the next if-block instruction
+      $tempNode->nextInstruction = self::block();
+    }
+    self::consume('R_PAR');
+
+    return $statement;
+  }
+
   // <block> => ( <print> )* | ( <assignment> ) *
   function block() {
     // In this case, as a WHILE loop can span several lines, our token could be null or WHITESPACE  
@@ -199,7 +225,9 @@ class Parser {
   	if ( $this->currentToken['symbol'] === "PRINT" ){
   		$block = self::printFunction();
     } else if ( $this->currentToken['symbol'] === "WHILE" ){
-      $block = self::statement();
+      $block = self::while_statement();
+    } else if ( $this->currentToken['symbol'] === "IF" ){
+      $block = self::if_statement();
   	} else if ( $this->currentToken['symbol'] != "R_PAR" ) {
   	  // This should catch all our errors in the block
   		$block = self::assignment();
