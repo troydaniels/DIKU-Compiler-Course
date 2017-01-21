@@ -1,20 +1,7 @@
-a = 0;
-while (a < 5 ){
-	if (a < 5) {
-		print "? ";
-	}
-	if (a < 4) {
-		print "? ";
-	}
-	if (a < 3) {
-		print "? ";
-	}
-	if (a < 2) {
-		print "? ";
-	}
-	if (a < 1) {
-		print "? ";
-	}
-	print "\n";
-	a = a + 1;
+n = 0;  
+while( n < 10 ) {
+   print "This is itteration number ";
+   print n;  
+   print "\n";
+   n = n + 1;
 }

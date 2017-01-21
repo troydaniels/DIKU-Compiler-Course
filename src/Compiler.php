@@ -47,7 +47,7 @@ class Interpreter{
     private $symbolTable;
     // Stores return value (possibly null) of the previous interpret_* function call
     private $previousCalc;
-    private $strings;
+    private $strings = array();
 
    function __construct( $fh_ ){
        $this->parser = new Parser();
