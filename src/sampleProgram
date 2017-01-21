@@ -1,32 +1,20 @@
 a = 0;
-b = 0;
-c = 0;
-d = 0;
-e = 0;
-//This is a comment
-//This is also a comment
-if( a < 1 ) {
-	print "? ";
+while (a < 5 ){
+	if (a < 5) {
+		print "? ";
+	}
+	if (a < 4) {
+		print "? ";
+	}
+	if (a < 3) {
+		print "? ";
+	}
+	if (a < 2) {
+		print "? ";
+	}
+	if (a < 1) {
+		print "? ";
+	}
+	print "\n";
 	a = a + 1;
 }
-print "\n";
-if( a < 2 ) {
-	print "? ";
-	a = a + 1;
-}
-print "\n";
-if( a < 3 ) {
-	print "? ";
-	a = a + 1;
-}
-print "\n";
-if( a < 4 ) {
-	print "? ";
-	a = a + 1;
-}
-print "\n";
-if( a < 5 ) {
-	print "? ";
-	a = a + 1;
-}
-print "\nhere\n";
