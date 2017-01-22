@@ -20,7 +20,6 @@
 define("_STRING", "01");
 define("_CLASSREF", "07");
 define("_STRINGREF", "08");
-define("_STRINGREF", "08");
 define("_FIELD", "09");
 define("_METHOD", "0a");
 define("_NAMETYPE", "0c");
@@ -286,9 +285,9 @@ class Bytecode{
 
     // Returns correctly padded hex representation of int as string
     // whose length is a multiple of $mod
-    function paddedHex($string, $mod){
+    function paddedHex($int, $mod){
         // Get a hex representation of int
-        $tempString = dechex($string);
+        $tempString = dechex($int);
         while(strlen($tempString) % $mod !== 0){
             $tempString = "0" . $tempString;
         }
